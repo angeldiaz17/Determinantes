@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Determinantes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #resultado, #procedimiento {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        pre {
+            background-color: #eef;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Calculadora de Determinantes</h1>
+    <p>Introduce la matriz en formato de texto. Ejemplo para una matriz 2x2:</p>
+    <pre>a[0][0] a[0][1]<br>a[1][0] a[1][1]</pre>
+    <textarea id="matrixInput" placeholder="Introduce la matriz aquí..."></textarea>
+    <button onclick="calculateDeterminant()">Calcular Determinante</button>
+    <div id="resultado"></div>
+    <div id="procedimiento"></div>
+</div>
+
+<script>
+    function calculateDeterminant() {
+        const input = document.getElementById('matrixInput').value.trim();
+        const matrix = parseMatrix(input);
+        const [det, steps] = determinant(matrix);
+        document.getElementById('resultado').innerText = `El determinante es: ${det}`;
+        document.getElementById('procedimiento').innerHTML = steps.join('<br>');
+    }
+
+    function parseMatrix(input) {
+        const rows = input.split('\n').map(row => row.trim());
+        return rows.map(row => row.split(' ').map(Number));
+    }
+
+    function determinant(matrix) {
+        const n = matrix.length;
+        const steps = [];
+
+        steps.push(`Matriz original (A):<br><pre>${matrixToString(matrix)}</pre>`);
+
+        if (n === 1) {
+            steps.push(`Det(a[0][0]) = ${matrix[0][0]}`);
+            return [matrix[0][0], steps];
+        }
+
+        if (n === 2) {
+            const result = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+            steps.push(`Det = a[0][0] * a[1][1] - a[0][1] * a[1][0]`);
+            steps.push(`Det = ${matrix[0][0]} * ${matrix[1][1]} - ${matrix[0][1]} * ${matrix[1][0]}`);
+            steps.push(`Det = ${result}`);
+            return [result, steps];
+        }
+
+        let det = 0;
+        for (let c = 0; c < n; c++) {
+            const minor = getMinor(matrix, 0, c);
+            const [minorDet, minorSteps] = determinant(minor);
+            const sign = (c % 2 === 0) ? 1 : -1;
+            det += sign * matrix[0][c] * minorDet;
+
+            steps.push(`Paso con columna ${c}:`);
+            steps.push(`Det += ${sign} * a[0][${c}] * Det(minor de a[0][${c}])`);
+            steps.push(`Matriz menor (eliminando fila 0 y columna ${c}):<br><pre>${matrixToString(minor)}</pre>`);
+            steps.push(`Det += ${sign} * ${matrix[0][c]} * ${minorDet}`);
+        }
+        steps.push(`Det = ${det}`);
+        return [det, steps];
+    }
+
+    function getMinor(matrix, row, col) {
+        return matrix
+            .filter((_, i) => i !== row)
+            .map(r => r.filter((_, j) => j !== col));
+    }
+
+    function matrixToString(matrix) {
+        return matrix.map(row => row.join(' ')).join('\n');
+    }
+</script>
+
+</body>
+</html>
